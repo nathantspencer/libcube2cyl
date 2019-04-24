@@ -117,7 +117,7 @@ private:
     inline bool cmpDoubleEqualSmaller(const double& a, const double& b, const double& epsilon);
     inline bool cmpDoubleLarger(      const double& a, const double& b, const double& epsilon);
     inline bool cmpDoubleEqualLarger( const double& a, const double& b, const double& epsilon);
-    inline bool isDoubleInRange(const double& value, const double& small, const double& large, const double& epsilon);
+    inline bool isDoubleInRange(const double& value, const double& smaller, const double& larger, const double& epsilon);
 
     inline void rotRad(double rad, double& x, double& y, double& temp);
     inline void transDis(double dis, double& x, double& y);
@@ -485,15 +485,15 @@ inline bool Cube2Cyl::cmpDoubleEqualLarger(const double& a, const double& b, con
 /** \brief Test if value in in the range of [small, large)
  *
  * \param value   const double&
- * \param small   const double&
- * \param large   const double&
+ * \param smaller const double&
+ * \param larger  const double&
  * \param epsilon const double&
  * \return bool
  *
  */
-inline bool Cube2Cyl::isDoubleInRange(const double& value, const double& small, const double& large, const double& epsilon) {
-    return    cmpDoubleEqualLarger(value, small, epsilon)
-           && cmpDoubleSmaller(    value, large, epsilon);
+inline bool Cube2Cyl::isDoubleInRange(const double& value, const double& smaller, const double& larger, const double& epsilon) {
+    return    cmpDoubleEqualLarger(value, smaller, epsilon)
+           && cmpDoubleSmaller(    value, larger, epsilon);
 }
 
 
