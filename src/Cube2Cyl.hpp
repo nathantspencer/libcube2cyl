@@ -83,6 +83,7 @@ public:
     void init(unsigned int pxPanoH, unsigned int pxPanoV, unsigned int pxInW, double rdInV, double rdInH);
 
     void genMap();
+    void genMapOversample16x(); // Same map, but with 16x samples per cylindrical projection pixel
 
     /** \brief Get the cubic coordinates
      *
@@ -95,11 +96,23 @@ public:
         return &map[x*pxPanoSizeV + y];
     }
 
+    /** \brief Get the cubic coordinates
+     *
+     * \param x const unsigned int  The x coordinate of the panorama
+     * \param y const unsigned int  The y coordinate of the panorama
+     * \param z const unsigned int  The sample index, between 0 and 15
+     * \return const CUBE_COORD* const  The cubic coordinate pointer
+     *
+     */
+    const CUBE_COORD* const getCoordOversample16x(const unsigned int x, const unsigned int y, const unsigned int z) const {
+        return &map[x * pxPanoSizeV * 16 + y * 16 + z];
+    }
+
     Cube2Cyl(void);
     ~Cube2Cyl(void);
 
 private:
-    inline void calXY(const int& i, const int& j);
+    inline void calXY(const double& i, const double& j);
 
     inline void calXYZ(const int& i, const int& j, double& x, double& y, double& z);
 
@@ -228,6 +241,29 @@ void Cube2Cyl::genMap() {
     }
 }
 
+void Cube2Cyl::genMapOversample16x() {
+
+    if (NULL != map) {
+        free(map);
+    }
+
+    map = (CUBE_COORD*)malloc(pxPanoSizeV * pxPanoSizeH * sizeof(CUBE_COORD) * 16);
+
+    unsigned int pos = 0;
+
+    for (unsigned int x = 0; x < pxPanoSizeH; ++x) {
+        for (unsigned int y = 0; y < pxPanoSizeV; ++y) {
+            for (unsigned int z = 0; z < 16; ++z) {
+                calXY(x - 0.375f + (z % 4) * 0.25f, y - 0.375f + (z / 4) * 0.25f);
+
+                map[pos].face = cubeFaceId;
+                map[pos].x = mappedX;
+                map[pos++].y = mappedY;
+            }
+        }
+    }
+}
+
 /** \brief Get the cubic coordinates
  *
  * \param x const unsigned int  The panorama x coordinate
@@ -270,12 +306,12 @@ inline void Cube2Cyl::transDis(double dis, double& x, double& y) {
 
 /** \brief Calculate the x and y coordinates of given i and j
  *
- * \param i const int&  The coordinate along the width axis
- * \param j const int&  The coordinate along the height axis
+ * \param i const double&  The coordinate along the width axis
+ * \param j const double&  The coordinate along the height axis
  * \return void
  *
  */
-inline void Cube2Cyl::calXY(const int& i, const int& j) {
+inline void Cube2Cyl::calXY(const double& i, const double& j) {
     calXYZ(i, j, tX, tY, tZ);
 
     switch (cubeFaceId) {
